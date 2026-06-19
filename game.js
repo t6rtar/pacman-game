@@ -154,6 +154,8 @@ function gameLoop(ts) {
 }
 
 function movePacman() {
+  pacman.prevX = pacman.x;
+  pacman.prevY = pacman.y;
   if (canMove(pacman.x, pacman.y, inputDir.dx, inputDir.dy)) {
     pacman.dx = inputDir.dx;
     pacman.dy = inputDir.dy;
@@ -262,6 +264,7 @@ function moveGhosts() {
 
     const d = bfsNext(g, targetX, targetY);
     g.dx = d.dx; g.dy = d.dy;
+    g.prevX = g.x; g.prevY = g.y;
     const next = wrap(g.x + g.dx, g.y + g.dy);
     g.x = next.x; g.y = next.y;
   });
@@ -353,9 +356,19 @@ function drawMaze() {
   }
 }
 
+function lerp(a, b, t) { return a + (b - a) * t; }
+function lerpGrid(prev, cur, t) {
+  // Handle tunnel wrap: if jump > 1 cell, skip interpolation
+  if (Math.abs(cur - prev) > 1) return cur;
+  return lerp(prev, cur, t);
+}
+
 function drawPacman() {
-  const px = pacman.x * CELL + CELL / 2;
-  const py = pacman.y * CELL + CELL / 2;
+  const t = Math.min(pacTimer / PAC_SPEED, 1);
+  const gx = lerpGrid(pacman.prevX ?? pacman.x, pacman.x, t);
+  const gy = lerpGrid(pacman.prevY ?? pacman.y, pacman.y, t);
+  const px = gx * CELL + CELL / 2;
+  const py = gy * CELL + CELL / 2;
   const angle = Math.atan2(pacman.dy, pacman.dx);
   const mouth = mouthAngle * Math.PI;
 
@@ -374,8 +387,11 @@ function drawPacman() {
 
 function drawGhost(g) {
   if (g.mode === "house") return;
-  const px = g.x * CELL;
-  const py = g.y * CELL;
+  const t = Math.min(ghostTimer / GHOST_SPEED, 1);
+  const gx = lerpGrid(g.prevX ?? g.x, g.x, t);
+  const gy = lerpGrid(g.prevY ?? g.y, g.y, t);
+  const px = gx * CELL;
+  const py = gy * CELL;
   const cx = px + CELL / 2;
   const cy = py + CELL / 2;
   const r = CELL / 2 - 1;
