@@ -7,6 +7,12 @@ canvas.width = COLS * CELL;
 canvas.height = ROWS * CELL;
 const ctx = canvas.getContext("2d");
 
+const mazeCanvas = document.createElement("canvas");
+mazeCanvas.width = canvas.width;
+mazeCanvas.height = canvas.height;
+const mazeCtx = mazeCanvas.getContext("2d");
+let mazeDirty = true;
+
 const scoreEl = document.getElementById("score");
 const livesEl = document.getElementById("lives");
 const levelEl = document.getElementById("level");
@@ -77,6 +83,7 @@ function initGame() {
 }
 
 function initRound() {
+  mazeDirty = true;
   pacman = { x: PACMAN_START.x, y: PACMAN_START.y, dx: 0, dy: 0, nextDx: 1, nextDy: 0 };
   mouthAngle = 0.25;
   mouthDir = -1;
@@ -162,11 +169,13 @@ function movePacman() {
     map[pacman.y][pacman.x] = 0;
     score += 10;
     dotCount--;
+    mazeDirty = true;
     updateUI();
   } else if (cell === 3) {
     map[pacman.y][pacman.x] = 0;
     score += 50;
     dotCount--;
+    mazeDirty = true;
     updateUI();
     frightenTimer = frightenDuration;
     ghosts.forEach(g => { if (!g.eaten) { g.frightened = true; g.dx = -g.dx; g.dy = -g.dy; } });
@@ -303,10 +312,14 @@ function nextLevel() {
 // ─── Drawing ────────────────────────────────────────────────────────────────
 
 function draw() {
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  if (mazeDirty) {
+    mazeCtx.fillStyle = "#000";
+    mazeCtx.fillRect(0, 0, mazeCanvas.width, mazeCanvas.height);
+    drawMaze();
+    mazeDirty = false;
+  }
 
-  drawMaze();
+  ctx.drawImage(mazeCanvas, 0, 0);
   drawPacman();
   ghosts.forEach(drawGhost);
 }
@@ -318,23 +331,23 @@ function drawMaze() {
       const px = col * CELL;
       const py = row * CELL;
       if (cell === 1) {
-        ctx.fillStyle = "#00f";
-        ctx.fillRect(px, py, CELL, CELL);
-        ctx.strokeStyle = "#44f";
-        ctx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
+        mazeCtx.fillStyle = "#00f";
+        mazeCtx.fillRect(px, py, CELL, CELL);
+        mazeCtx.strokeStyle = "#44f";
+        mazeCtx.strokeRect(px + 1, py + 1, CELL - 2, CELL - 2);
       } else if (cell === 2) {
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(px + CELL / 2, py + CELL / 2, 2, 0, Math.PI * 2);
-        ctx.fill();
+        mazeCtx.fillStyle = "#fff";
+        mazeCtx.beginPath();
+        mazeCtx.arc(px + CELL / 2, py + CELL / 2, 2, 0, Math.PI * 2);
+        mazeCtx.fill();
       } else if (cell === 3) {
-        ctx.fillStyle = "#fff";
-        ctx.beginPath();
-        ctx.arc(px + CELL / 2, py + CELL / 2, 5, 0, Math.PI * 2);
-        ctx.fill();
+        mazeCtx.fillStyle = "#fff";
+        mazeCtx.beginPath();
+        mazeCtx.arc(px + CELL / 2, py + CELL / 2, 5, 0, Math.PI * 2);
+        mazeCtx.fill();
       } else if (cell === 4) {
-        ctx.fillStyle = "#f9f";
-        ctx.fillRect(px, py + CELL / 2 - 1, CELL, 2);
+        mazeCtx.fillStyle = "#f9f";
+        mazeCtx.fillRect(px, py + CELL / 2 - 1, CELL, 2);
       }
     }
   }
