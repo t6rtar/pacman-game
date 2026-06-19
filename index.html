@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pac-Man</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: monospace; color: #fff; }
+    canvas { border: 2px solid #00f; }
+    #ui { display: flex; gap: 40px; margin-bottom: 10px; font-size: 18px; }
+    #message { margin-top: 10px; font-size: 20px; color: #ff0; min-height: 24px; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <span>SCORE: <span id="score">0</span></span>
+    <span>LIVES: <span id="lives">3</span></span>
+    <span>LEVEL: <span id="level">1</span></span>
+  </div>
+  <canvas id="game"></canvas>
+  <div id="message">Press ENTER to start</div>
+  <script src="game.js"></script>
+</body>
+</html>
